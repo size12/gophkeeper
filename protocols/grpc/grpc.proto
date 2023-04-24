@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package gophkeeper;
+
+option go_package = "github.com/size12/gophkeeper";
+
+import "google/protobuf/empty.proto";
+
+message UserCredentials {
+  string login = 1;
+  string password = 2;
+}
+
+message RecordID {
+  string id = 1;
+}
+
+message Record {
+  string id = 1;
+  string user_id = 2;
+  string type = 3;
+  string metadata = 4;
+  bytes stored_data = 5;
+}
+
+message Session {
+  string session_token = 1;
+}
+
+message RecordsList {
+  repeated Record records = 1;
+}
+
+service Gophkeeper {
+  rpc Register(UserCredentials) returns (Session);
+  rpc Login(UserCredentials) returns (Session);
+
+  rpc GetRecordsInfo(google.protobuf.Empty) returns (RecordsList);
+  rpc GetRecord(RecordID) returns (Record);
+  rpc CreateRecord(Record) returns (google.protobuf.Empty);
+  rpc DeleteRecord(RecordID) returns (google.protobuf.Empty);
+}
+
+
