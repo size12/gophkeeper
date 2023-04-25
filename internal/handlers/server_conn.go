@@ -1,4 +1,4 @@
-package server
+package handlers
 
 import (
 	"context"
@@ -8,7 +8,6 @@ import (
 	"net"
 
 	"github.com/size12/gophkeeper/internal/entity"
-	"github.com/size12/gophkeeper/internal/handlers"
 	"github.com/size12/gophkeeper/internal/storage"
 	pb "github.com/size12/gophkeeper/protocols/grpc"
 	"google.golang.org/grpc"
@@ -20,10 +19,10 @@ import (
 
 type Server struct {
 	pb.UnimplementedGophkeeperServer
-	Handlers *handlers.ServerHandlers
+	Handlers *ServerHandlers
 }
 
-func NewServer(h *handlers.ServerHandlers) *Server {
+func NewServer(h *ServerHandlers) *Server {
 	return &Server{
 		Handlers: h,
 	}
@@ -40,7 +39,6 @@ func (server *Server) Run(ctx context.Context, runAddress string) {
 
 	go func() {
 		fmt.Println("Сервер gRPC начал работу")
-		// получаем запрос gRPC
 		if err := sgrpc.Serve(listen); err != nil {
 			log.Fatal(err)
 		}
@@ -54,7 +52,7 @@ func (server *Server) Register(_ context.Context, credentials *pb.UserCredential
 		Password: credentials.Password,
 	})
 
-	if errors.Is(err, handlers.ErrFieldIsEmpty) {
+	if errors.Is(err, ErrFieldIsEmpty) {
 		return nil, status.Errorf(codes.InvalidArgument, "Login or password is empty.")
 	}
 
@@ -75,7 +73,7 @@ func (server *Server) Login(_ context.Context, credentials *pb.UserCredentials) 
 		Password: credentials.Password,
 	})
 
-	if errors.Is(err, handlers.ErrFieldIsEmpty) {
+	if errors.Is(err, ErrFieldIsEmpty) {
 		return nil, status.Errorf(codes.InvalidArgument, "Login or password is empty.")
 	}
 

@@ -6,8 +6,9 @@ import (
 )
 
 type UserCredentials struct {
-	Login    string
-	Password string
+	Login     string
+	Password  string
+	MasterKey string
 }
 
 type UserID string
@@ -38,10 +39,16 @@ func (data *TextData) Bytes() ([]byte, error) {
 }
 
 type BinaryFile struct {
-	File *os.File
+	FilePath string
+	File     *os.File
 }
 
 func (data *BinaryFile) Bytes() ([]byte, error) {
+	file, err := os.Open(data.FilePath)
+	if err != nil {
+		return nil, err
+	}
+	data.File = file
 	return io.ReadAll(data.File)
 }
 
