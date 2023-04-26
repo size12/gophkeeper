@@ -54,7 +54,7 @@ func (app *TUI) authPage(message string) {
 	})
 
 	form.AddPasswordField("Master Key", "", 20, '*', func(masterKey string) {
-		credentials.MasterKey = masterKey
+		credentials.MasterKey = []byte(masterKey)
 	})
 
 	form.AddButton("Login", func() {
@@ -117,6 +117,7 @@ func (app *TUI) recordsInfoPage(message string) {
 
 	if errors.Is(err, storage.ErrUnknown) || err != nil {
 		message = "Something is wrong. Please try later."
+		return
 	}
 
 	list := tview.NewList()
@@ -138,12 +139,15 @@ func (app *TUI) recordsInfoPage(message string) {
 
 	listFrame := tview.NewFrame(list).SetBorders(0, 0, 0, 1, 4, 4).
 		AddText("Up/Down - switch between records | Enter - choose this option", false, tview.AlignLeft, tcell.ColorWhite).
-		AddText("Ctrl+N - create new record", false, tview.AlignLeft, tcell.ColorWhite).
+		AddText("Ctrl+N - create new record       | Ctrl+U - refresh", false, tview.AlignLeft, tcell.ColorWhite).
 		AddText(message, false, tview.AlignRight, tcell.ColorWhite)
 
 	listFrame.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlN {
 			app.createRecordPage("")
+		}
+		if event.Key() == tcell.KeyCtrlU {
+			app.recordsInfoPage("Refreshed.")
 		}
 		return event
 	})
@@ -157,10 +161,17 @@ func (app *TUI) recordPage(recordID string, message string) {
 
 	if errors.Is(err, storage.ErrUserUnauthorized) {
 		app.authPage("Session expired. Please login again.")
+		return
+	}
+
+	if errors.Is(err, storage.ErrNotFound) {
+		app.recordsInfoPage("Not found this record.")
+		return
 	}
 
 	if err != nil {
 		app.recordsInfoPage("Failed get record.")
+		return
 	}
 
 	if record.Metadata == "" {
@@ -189,6 +200,11 @@ func (app *TUI) recordPage(recordID string, message string) {
 				return event
 			}
 
+			if errors.Is(err, handlers.ErrWrongMasterKey) {
+				app.authPage("Wrong master key. Please login again.")
+				return event
+			}
+
 			if errors.Is(err, storage.ErrNotFound) {
 				app.recordsInfoPage("Failed to delete. Not found record.")
 				return event
@@ -196,6 +212,8 @@ func (app *TUI) recordPage(recordID string, message string) {
 
 			if errors.Is(err, storage.ErrUnknown) || err != nil {
 				app.recordPage(recordID, "Something is wrong. Please try later.")
+				return event
+
 			}
 
 			app.recordsInfoPage("Deleted successfully.")
@@ -229,6 +247,11 @@ func (app *TUI) createTextRecord() {
 
 		if errors.Is(err, storage.ErrUnknown) {
 			app.recordsInfoPage("Something is wrong. Please try later.")
+			return
+		}
+
+		if errors.Is(err, handlers.ErrWrongMasterKey) {
+			app.authPage("Wrong master key. Please login again.")
 			return
 		}
 
@@ -279,6 +302,11 @@ func (app *TUI) createCredentialsRecord() {
 
 		if errors.Is(err, storage.ErrUnknown) {
 			app.recordsInfoPage("Something is wrong. Please try later.")
+			return
+		}
+
+		if errors.Is(err, handlers.ErrWrongMasterKey) {
+			app.authPage("Wrong master key. Please login again.")
 			return
 		}
 
@@ -333,6 +361,11 @@ func (app *TUI) createCardRecord() {
 
 		if errors.Is(err, storage.ErrUnknown) {
 			app.recordsInfoPage("Something is wrong. Please try later.")
+			return
+		}
+
+		if errors.Is(err, handlers.ErrWrongMasterKey) {
+			app.authPage("Wrong master key. Please login again.")
 			return
 		}
 

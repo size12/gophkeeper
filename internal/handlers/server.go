@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 
 	"github.com/size12/gophkeeper/internal/entity"
 	"github.com/size12/gophkeeper/internal/storage"
@@ -21,7 +23,14 @@ func (handlers *ServerHandlers) LoginUser(credentials entity.UserCredentials) (e
 		return "", ErrFieldIsEmpty
 	}
 
+	credentials.Password = credentials.Login + credentials.Password
+
+	sha := sha256.New()
+	sha.Write([]byte(credentials.Password))
+	credentials.Password = hex.EncodeToString(sha.Sum(nil))
+
 	userID, err := handlers.Storage.LoginUser(credentials)
+
 	if err != nil {
 		return "", err
 	}
@@ -40,7 +49,17 @@ func (handlers *ServerHandlers) CreateUser(credentials entity.UserCredentials) (
 		return "", ErrFieldIsEmpty
 	}
 
-	err := handlers.Storage.CreateUser(credentials)
+	passwordHash := credentials.Login + credentials.Password
+
+	sha := sha256.New()
+	sha.Write([]byte(passwordHash))
+	passwordHash = hex.EncodeToString(sha.Sum(nil))
+
+	err := handlers.Storage.CreateUser(entity.UserCredentials{
+		Login:    credentials.Login,
+		Password: passwordHash,
+	})
+
 	if err != nil {
 		return "", err
 	}

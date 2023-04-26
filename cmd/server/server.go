@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/size12/gophkeeper/internal/config"
@@ -11,8 +10,6 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello from server!")
-
 	cfg := config.GetServerConfig()
 
 	serverStorage := storage.NewDBStorage(cfg.DBConnectionURL)

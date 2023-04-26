@@ -8,7 +8,7 @@ import (
 type UserCredentials struct {
 	Login     string
 	Password  string
-	MasterKey string
+	MasterKey []byte
 }
 
 type UserID string
