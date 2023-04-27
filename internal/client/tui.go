@@ -3,6 +3,7 @@ package client
 import (
 	"errors"
 	"log"
+	"path"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -387,6 +388,64 @@ func (app *TUI) createCardRecord() {
 	app.pages.SwitchToPage("createCardRecord")
 }
 
+func (app *TUI) createFileRecord() {
+	record := entity.Record{Type: "FILE"}
+	form := tview.NewForm()
+
+	file := entity.BinaryFile{}
+
+	form.AddInputField("Filepath", "", 20, nil, func(text string) {
+		file.FilePath = text
+	})
+
+	form.AddButton("OK", func() {
+		filename := path.Base(file.FilePath)
+		record.Metadata = filename
+
+		data, err := file.Bytes()
+
+		if err != nil {
+			app.recordsInfoPage("Failed opened file.")
+			return
+		}
+
+		record.Data = data
+
+		err = app.Client.CreateRecord(record)
+
+		if errors.Is(err, storage.ErrUserUnauthorized) {
+			app.authPage("Session expired. Please login again.")
+			return
+		}
+
+		if errors.Is(err, storage.ErrUnknown) {
+			app.recordsInfoPage("Something is wrong. Please try later.")
+			return
+		}
+
+		if errors.Is(err, handlers.ErrWrongMasterKey) {
+			app.authPage("Wrong master key. Please login again.")
+			return
+		}
+
+		app.recordsInfoPage("Created record successfully.")
+	})
+
+	frame := tview.NewFrame(form).SetBorders(0, 0, 0, 1, 4, 4).
+		AddText("TAB - switch between fields | Enter - choose this option", false, tview.AlignLeft, tcell.ColorWhite).
+		AddText("ESC - return to the menu.", false, tview.AlignLeft, tcell.ColorWhite)
+
+	frame.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyESC {
+			app.recordsInfoPage("Returned to menu.")
+		}
+		return event
+	})
+
+	app.pages.AddPage("createFileRecord", frame, true, true)
+	app.pages.SwitchToPage("createFileRecord")
+}
+
 func (app *TUI) createRecordPage(message string) {
 	form := tview.NewForm()
 
@@ -398,6 +457,8 @@ func (app *TUI) createRecordPage(message string) {
 			app.createCredentialsRecord()
 		case "Credit card":
 			app.createCardRecord()
+		case "Binary file":
+			app.createFileRecord()
 		}
 	})
 

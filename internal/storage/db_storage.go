@@ -103,6 +103,7 @@ func (storage *DBStorage) GetRecordsInfo(ctx context.Context) ([]entity.Record, 
 	userID, ok := ctx.Value("userID").(entity.UserID)
 	if !ok {
 		log.Println("Failed get userID from context in getting all records")
+		// TODO: add logs to file.
 		return nil, ErrUserUnauthorized
 	}
 
@@ -135,23 +136,25 @@ func (storage *DBStorage) GetRecordsInfo(ctx context.Context) ([]entity.Record, 
 	return result, nil
 }
 
-func (storage *DBStorage) CreateRecord(ctx context.Context, record entity.Record) error {
+func (storage *DBStorage) CreateRecord(ctx context.Context, record entity.Record) (string, error) {
 	userID, ok := ctx.Value("userID").(entity.UserID)
 	if !ok {
 		log.Println("Failed get userID from context in getting all records")
-		return ErrUserUnauthorized
+		return "", ErrUserUnauthorized
 	}
 
 	hexDataString := hex.EncodeToString(record.Data)
 
-	_, err := storage.DB.ExecContext(ctx, `INSERT INTO users_data (user_id, record_type, metadata, encoded_data) VALUES ($1, $2, $3, $4)`, userID, record.Type, record.Metadata, hexDataString)
+	row := storage.DB.QueryRowContext(ctx, `INSERT INTO users_data (user_id, record_type, metadata, encoded_data) VALUES ($1, $2, $3, $4) RETURNING record_id`, userID, record.Type, record.Metadata, hexDataString)
 
-	if err != nil {
-		log.Println("Failed add new record:", err)
-		return ErrUnknown
+	recordID := ""
+
+	err := row.Scan(&recordID)
+	if err != nil || row.Err() != nil {
+		return "", ErrUnknown
 	}
 
-	return nil
+	return recordID, nil
 }
 
 func (storage *DBStorage) GetRecord(ctx context.Context, recordID string) (entity.Record, error) {

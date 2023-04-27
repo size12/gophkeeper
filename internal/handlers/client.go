@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
+	"os"
 
 	"github.com/size12/gophkeeper/internal/entity"
 	"github.com/size12/gophkeeper/internal/storage"
@@ -101,6 +102,19 @@ func (client *Client) GetRecord(recordID string) (entity.Record, error) {
 	}
 
 	record.Data = decoded
+
+	if record.Type == "FILE" {
+		file, err := os.Create(record.Metadata)
+		if err != nil {
+			return record, storage.ErrUnknown
+		}
+
+		_, err = file.Write(record.Data)
+		if err != nil {
+			return record, storage.ErrUnknown
+		}
+		record.Data = []byte("Saved file successfully to " + record.Metadata + ".")
+	}
 
 	return record, nil
 }

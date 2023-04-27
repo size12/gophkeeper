@@ -115,7 +115,8 @@ func (handlers *ServerHandlers) CreateRecord(ctx context.Context, record entity.
 	}
 
 	ctx = context.WithValue(ctx, "userID", userID)
-	return handlers.Storage.CreateRecord(ctx, record)
+	_, err = handlers.Storage.CreateRecord(ctx, record)
+	return err
 }
 
 func (handlers *ServerHandlers) DeleteRecord(ctx context.Context, recordID string) error {

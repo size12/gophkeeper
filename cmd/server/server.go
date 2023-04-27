@@ -12,8 +12,12 @@ import (
 func main() {
 	cfg := config.GetServerConfig()
 
-	serverStorage := storage.NewDBStorage(cfg.DBConnectionURL)
-	serverStorage.MigrateUP()
+	db := storage.NewDBStorage(cfg.DBConnectionURL)
+	db.MigrateUP()
+
+	files := storage.NewFileStorage(cfg.FilesDirectory)
+
+	serverStorage := storage.NewStorage(db, files)
 
 	handlersAuth := handlers.NewAuthenticatorJWT([]byte("secret ewfwfw key"))
 	serverHandlers := handlers.NewServerHandlers(serverStorage, handlersAuth)
