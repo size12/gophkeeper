@@ -12,7 +12,7 @@ func main() {
 
 	c := handlers.NewClientConn(cfg.ServerAddress)
 
-	h := handlers.NewClient(c)
+	h := handlers.NewClientHandlers(c)
 
 	tui := client.NewTUI(h)
 

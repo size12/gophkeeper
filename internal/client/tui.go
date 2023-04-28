@@ -13,12 +13,14 @@ import (
 	"golang.design/x/clipboard"
 )
 
+// TUI is a struct for terminal user interface.
 type TUI struct {
 	*tview.Application
 	pages  *tview.Pages
 	Client *handlers.Client
 }
 
+// NewTUI gets new terminal user interface for client.
 func NewTUI(client *handlers.Client) *TUI {
 
 	app := tview.NewApplication()
@@ -42,6 +44,7 @@ func NewTUI(client *handlers.Client) *TUI {
 	return tui
 }
 
+// authPage switches to authentication page, where user can log in or register.
 func (app *TUI) authPage(message string) {
 	credentials := entity.UserCredentials{}
 	form := tview.NewForm()
@@ -108,6 +111,7 @@ func (app *TUI) authPage(message string) {
 	app.pages.SwitchToPage("authentication")
 }
 
+// recordInfoPage switches to page, where are all records shown. You can choose one.
 func (app *TUI) recordsInfoPage(message string) {
 	records, err := app.Client.GetRecordsInfo()
 
@@ -157,6 +161,7 @@ func (app *TUI) recordsInfoPage(message string) {
 	app.pages.SwitchToPage("records")
 }
 
+// recordPage switches to record page, where you can see decrypted record data, copy this data, or delete record.
 func (app *TUI) recordPage(recordID string, message string) {
 	record, err := app.Client.GetRecord(recordID)
 
@@ -226,8 +231,9 @@ func (app *TUI) recordPage(recordID string, message string) {
 	app.pages.SwitchToPage("record")
 }
 
+// createTextRecord creates new text record.
 func (app *TUI) createTextRecord() {
-	record := entity.Record{Type: "TEXT"}
+	record := entity.Record{Type: entity.TypeText}
 	form := tview.NewForm()
 
 	form.AddTextArea("Text", "", 30, 5, 0, func(text string) {
@@ -274,8 +280,9 @@ func (app *TUI) createTextRecord() {
 	app.pages.SwitchToPage("createTextRecord")
 }
 
+// createCredentialsRecord creates credentials (login and password) record.
 func (app *TUI) createCredentialsRecord() {
-	record := entity.Record{Type: "LOGIN_AND_PASSWORD"}
+	record := entity.Record{Type: entity.TypeLoginAndPassword}
 	form := tview.NewForm()
 
 	loginAndPassword := entity.LoginAndPassword{}
@@ -329,8 +336,9 @@ func (app *TUI) createCredentialsRecord() {
 	app.pages.SwitchToPage("createTextRecord")
 }
 
+// createCardRecord creates credit card record (card number, expiration date, cvc).
 func (app *TUI) createCardRecord() {
-	record := entity.Record{Type: "CREDIT_CARD"}
+	record := entity.Record{Type: entity.TypeCreditCard}
 	form := tview.NewForm()
 
 	creditCard := entity.CreditCard{}
@@ -388,8 +396,9 @@ func (app *TUI) createCardRecord() {
 	app.pages.SwitchToPage("createCardRecord")
 }
 
+// createFileRecord creates file record. You can choose any file to save.
 func (app *TUI) createFileRecord() {
-	record := entity.Record{Type: "FILE"}
+	record := entity.Record{Type: entity.TypeFile}
 	form := tview.NewForm()
 
 	file := entity.BinaryFile{}
@@ -446,6 +455,7 @@ func (app *TUI) createFileRecord() {
 	app.pages.SwitchToPage("createFileRecord")
 }
 
+// createRecordPage creates page, where you can choose record type, then create it.
 func (app *TUI) createRecordPage(message string) {
 	form := tview.NewForm()
 

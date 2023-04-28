@@ -14,10 +14,12 @@ import (
 	"github.com/size12/gophkeeper/internal/entity"
 )
 
+// DBStorage for db storage.
 type DBStorage struct {
 	DB *sql.DB
 }
 
+// NewDBStorage connects to DB.
 func NewDBStorage(connectionURL string) *DBStorage {
 	db, err := sql.Open("pgx", connectionURL)
 
@@ -29,6 +31,7 @@ func NewDBStorage(connectionURL string) *DBStorage {
 	return &DBStorage{DB: db}
 }
 
+// MigrateUP migrates DB.
 func (storage *DBStorage) MigrateUP() {
 	driver, err := postgres.WithInstance(storage.DB, &postgres.Config{})
 	if err != nil {
@@ -51,6 +54,7 @@ func (storage *DBStorage) MigrateUP() {
 	}
 }
 
+// CreateUser saves to DB new user.
 func (storage *DBStorage) CreateUser(credentials entity.UserCredentials) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -78,6 +82,7 @@ func (storage *DBStorage) CreateUser(credentials entity.UserCredentials) error {
 	return nil
 }
 
+// LoginUser check if credentials are valid. Returns userID.
 func (storage *DBStorage) LoginUser(credentials entity.UserCredentials) (entity.UserID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -99,6 +104,7 @@ func (storage *DBStorage) LoginUser(credentials entity.UserCredentials) (entity.
 	return userID, nil
 }
 
+// GetRecordsInfo gets all DB record from this user.
 func (storage *DBStorage) GetRecordsInfo(ctx context.Context) ([]entity.Record, error) {
 	userID, ok := ctx.Value("userID").(entity.UserID)
 	if !ok {
@@ -136,6 +142,7 @@ func (storage *DBStorage) GetRecordsInfo(ctx context.Context) ([]entity.Record, 
 	return result, nil
 }
 
+// CreateRecord saves new record to DB, returns recordID.
 func (storage *DBStorage) CreateRecord(ctx context.Context, record entity.Record) (string, error) {
 	userID, ok := ctx.Value("userID").(entity.UserID)
 	if !ok {
@@ -157,6 +164,7 @@ func (storage *DBStorage) CreateRecord(ctx context.Context, record entity.Record
 	return recordID, nil
 }
 
+// GetRecord gets record from DB by ID.
 func (storage *DBStorage) GetRecord(ctx context.Context, recordID string) (entity.Record, error) {
 	record := entity.Record{}
 
@@ -191,6 +199,7 @@ func (storage *DBStorage) GetRecord(ctx context.Context, recordID string) (entit
 	return record, nil
 }
 
+// DeleteRecord deletes record from DB by ID.
 func (storage *DBStorage) DeleteRecord(ctx context.Context, recordID string) error {
 	userID, ok := ctx.Value("userID").(entity.UserID)
 	if !ok {

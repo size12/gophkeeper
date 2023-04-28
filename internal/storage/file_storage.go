@@ -10,10 +10,12 @@ import (
 	"github.com/size12/gophkeeper/internal/entity"
 )
 
+// FileStorage keeps records on disk.
 type FileStorage struct {
 	directory string
 }
 
+// NewFileStorage returns new file storage.
 func NewFileStorage(directory string) *FileStorage {
 	err := os.Mkdir(directory, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
@@ -23,6 +25,7 @@ func NewFileStorage(directory string) *FileStorage {
 	return &FileStorage{directory: directory}
 }
 
+// GetRecord reads file with record data.
 func (storage *FileStorage) GetRecord(ctx context.Context, recordID string) (entity.Record, error) {
 	metadata, ok := ctx.Value("recordMetadata").(string)
 	if !ok {
@@ -56,6 +59,7 @@ func (storage *FileStorage) GetRecord(ctx context.Context, recordID string) (ent
 	return record, nil
 }
 
+// DeleteRecord deletes file with record data.
 func (storage *FileStorage) DeleteRecord(_ context.Context, recordID string) error {
 	err := os.RemoveAll(storage.directory + "/" + recordID)
 	if errors.Is(err, os.ErrNotExist) {
@@ -68,6 +72,7 @@ func (storage *FileStorage) DeleteRecord(_ context.Context, recordID string) err
 	return nil
 }
 
+// CreateRecord creates new file with record data.
 func (storage *FileStorage) CreateRecord(_ context.Context, record entity.Record) (string, error) {
 	file, err := os.Create(storage.directory + "/" + record.ID)
 	if err != nil {

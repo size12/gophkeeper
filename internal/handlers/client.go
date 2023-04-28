@@ -11,18 +11,21 @@ import (
 	"github.com/size12/gophkeeper/internal/storage"
 )
 
+// Client struct for client handlers.
 type Client struct {
 	Conn      *ClientConn
 	authToken entity.AuthToken
 	masterKey []byte
 }
 
-func NewClient(conn *ClientConn) *Client {
+// NewClientHandlers returns new client handlers.
+func NewClientHandlers(conn *ClientConn) *Client {
 	return &Client{
 		Conn: conn,
 	}
 }
 
+// Login logins user by login and password.
 func (client *Client) Login(credentials entity.UserCredentials) error {
 	if credentials.Login == "" || credentials.Password == "" || len(credentials.MasterKey) == 0 {
 		return ErrFieldIsEmpty
@@ -46,6 +49,7 @@ func (client *Client) Login(credentials entity.UserCredentials) error {
 	return nil
 }
 
+// Register creates new user by login and password.
 func (client *Client) Register(credentials entity.UserCredentials) error {
 	if credentials.Login == "" || credentials.Password == "" || len(credentials.MasterKey) == 0 {
 		return ErrFieldIsEmpty
@@ -70,10 +74,12 @@ func (client *Client) Register(credentials entity.UserCredentials) error {
 	return nil
 }
 
+// GetRecordsInfo gets all records.
 func (client *Client) GetRecordsInfo() ([]entity.Record, error) {
 	return client.Conn.GetRecordsInfo(client.authToken)
 }
 
+// GetRecord gets record by recordID and decodes it.
 func (client *Client) GetRecord(recordID string) (entity.Record, error) {
 
 	record, err := client.Conn.GetRecord(client.authToken, recordID)
@@ -103,7 +109,7 @@ func (client *Client) GetRecord(recordID string) (entity.Record, error) {
 
 	record.Data = decoded
 
-	if record.Type == "FILE" {
+	if record.Type == entity.TypeFile {
 		file, err := os.Create(record.Metadata)
 		if err != nil {
 			return record, storage.ErrUnknown
@@ -119,10 +125,12 @@ func (client *Client) GetRecord(recordID string) (entity.Record, error) {
 	return record, nil
 }
 
+// DeleteRecord deletes record by his ID.
 func (client *Client) DeleteRecord(recordID string) error {
 	return client.Conn.DeleteRecord(client.authToken, recordID)
 }
 
+// CreateRecord creates new record.
 func (client *Client) CreateRecord(record entity.Record) error {
 	aesblock, err := aes.NewCipher(client.masterKey)
 
@@ -147,6 +155,7 @@ func (client *Client) CreateRecord(record entity.Record) error {
 	return client.Conn.CreateRecord(client.authToken, record)
 }
 
+// generateRandom generates random bytes for encrypting.
 func generateRandom(size int) ([]byte, error) {
 	b := make([]byte, size)
 	_, err := rand.Read(b)

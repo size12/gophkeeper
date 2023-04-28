@@ -22,6 +22,6 @@ func main() {
 	handlersAuth := handlers.NewAuthenticatorJWT([]byte("secret ewfwfw key"))
 	serverHandlers := handlers.NewServerHandlers(serverStorage, handlersAuth)
 
-	handlers.NewServer(serverHandlers).Run(context.Background(), cfg.RunAddress)
+	handlers.NewServerConn(serverHandlers).Run(context.Background(), cfg.RunAddress)
 	select {}
 }

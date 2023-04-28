@@ -7,11 +7,13 @@ import (
 	"github.com/size12/gophkeeper/internal/entity"
 )
 
+// Storage struct which saves to DB and file storage.
 type Storage struct {
 	DBStorage   *DBStorage
 	FileStorage *FileStorage
 }
 
+// NewStorage returns new storage.
 func NewStorage(DBStorage *DBStorage, fileStorage *FileStorage) *Storage {
 	return &Storage{
 		DBStorage:   DBStorage,
@@ -19,22 +21,26 @@ func NewStorage(DBStorage *DBStorage, fileStorage *FileStorage) *Storage {
 	}
 }
 
+// CreateUser creates new user and saves to DB storage.
 func (storage *Storage) CreateUser(credentials entity.UserCredentials) error {
 	return storage.DBStorage.CreateUser(credentials)
 }
 
+// LoginUser check user login using DB storage.
 func (storage *Storage) LoginUser(credentials entity.UserCredentials) (entity.UserID, error) {
 	return storage.DBStorage.LoginUser(credentials)
 }
 
+// GetRecordsInfo gets all records from user from DB storage.
 func (storage *Storage) GetRecordsInfo(ctx context.Context) ([]entity.Record, error) {
 	return storage.DBStorage.GetRecordsInfo(ctx)
 }
 
+// CreateRecord creates record, saves to DB. If record type is file, saves to file storage too.
 func (storage *Storage) CreateRecord(ctx context.Context, record entity.Record) (string, error) {
 	data := record.Data
 
-	if record.Type == "FILE" {
+	if record.Type == entity.TypeFile {
 		record.Data = nil
 	}
 
@@ -44,7 +50,7 @@ func (storage *Storage) CreateRecord(ctx context.Context, record entity.Record) 
 		return "", err
 	}
 
-	if record.Type == "FILE" {
+	if record.Type == entity.TypeFile {
 		record.ID = id
 		record.Data = data
 		_, err = storage.FileStorage.CreateRecord(ctx, record)
@@ -54,6 +60,7 @@ func (storage *Storage) CreateRecord(ctx context.Context, record entity.Record) 
 	return id, nil
 }
 
+// DeleteRecord deletes record from DB storage. If record type is file, deletes from file storage too.
 func (storage *Storage) DeleteRecord(ctx context.Context, recordID string) error {
 	err := storage.DBStorage.DeleteRecord(ctx, recordID)
 	if err != nil {
@@ -69,13 +76,14 @@ func (storage *Storage) DeleteRecord(ctx context.Context, recordID string) error
 	return nil
 }
 
+// GetRecord gets record from DB or file storage.
 func (storage *Storage) GetRecord(ctx context.Context, recordID string) (entity.Record, error) {
 	record, err := storage.DBStorage.GetRecord(ctx, recordID)
 	if err != nil {
 		return record, err
 	}
 
-	if record.Type == "FILE" {
+	if record.Type == entity.TypeFile {
 		ctx = context.WithValue(ctx, "recordMetadata", record.Metadata)
 		return storage.FileStorage.GetRecord(ctx, recordID)
 	}

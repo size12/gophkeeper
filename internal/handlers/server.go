@@ -4,21 +4,25 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"log"
 
 	"github.com/size12/gophkeeper/internal/entity"
 	"github.com/size12/gophkeeper/internal/storage"
 )
 
-type ServerHandlers struct {
+// Server struct for server handlers.
+type Server struct {
 	Storage       storage.Storager
 	Authenticator Authenticator
 }
 
-func NewServerHandlers(s storage.Storager, a Authenticator) *ServerHandlers {
-	return &ServerHandlers{Storage: s, Authenticator: a}
+// NewServerHandlers returns server handlers based on storage and authenticator.
+func NewServerHandlers(s storage.Storager, a Authenticator) *Server {
+	return &Server{Storage: s, Authenticator: a}
 }
 
-func (handlers *ServerHandlers) LoginUser(credentials entity.UserCredentials) (entity.AuthToken, error) {
+// LoginUser logins user by login and password.
+func (handlers *Server) LoginUser(credentials entity.UserCredentials) (entity.AuthToken, error) {
 	if credentials.Login == "" || credentials.Password == "" {
 		return "", ErrFieldIsEmpty
 	}
@@ -38,13 +42,15 @@ func (handlers *ServerHandlers) LoginUser(credentials entity.UserCredentials) (e
 	authToken, err := handlers.Authenticator.CreateToken(userID)
 
 	if err != nil {
+		log.Println("Failed create authToken:", err)
 		return "", storage.ErrUnknown
 	}
 
 	return authToken, nil
 }
 
-func (handlers *ServerHandlers) CreateUser(credentials entity.UserCredentials) (entity.AuthToken, error) {
+// CreateUser creates new user by login and password.
+func (handlers *Server) CreateUser(credentials entity.UserCredentials) (entity.AuthToken, error) {
 	if credentials.Login == "" || credentials.Password == "" {
 		return "", ErrFieldIsEmpty
 	}
@@ -67,7 +73,8 @@ func (handlers *ServerHandlers) CreateUser(credentials entity.UserCredentials) (
 	return handlers.LoginUser(credentials)
 }
 
-func (handlers *ServerHandlers) GetRecordsInfo(ctx context.Context) ([]entity.Record, error) {
+// GetRecordsInfo gets all records from storage.
+func (handlers *Server) GetRecordsInfo(ctx context.Context) ([]entity.Record, error) {
 	token, ok := ctx.Value("authToken").(entity.AuthToken)
 
 	if !ok {
@@ -84,7 +91,8 @@ func (handlers *ServerHandlers) GetRecordsInfo(ctx context.Context) ([]entity.Re
 	return handlers.Storage.GetRecordsInfo(ctx)
 }
 
-func (handlers *ServerHandlers) GetRecord(ctx context.Context, recordID string) (entity.Record, error) {
+// GetRecord get record from storage by ID.
+func (handlers *Server) GetRecord(ctx context.Context, recordID string) (entity.Record, error) {
 	token, ok := ctx.Value("authToken").(entity.AuthToken)
 
 	if !ok {
@@ -101,7 +109,8 @@ func (handlers *ServerHandlers) GetRecord(ctx context.Context, recordID string) 
 	return handlers.Storage.GetRecord(ctx, recordID)
 }
 
-func (handlers *ServerHandlers) CreateRecord(ctx context.Context, record entity.Record) error {
+// CreateRecord added record to storage.
+func (handlers *Server) CreateRecord(ctx context.Context, record entity.Record) error {
 	token, ok := ctx.Value("authToken").(entity.AuthToken)
 
 	if !ok {
@@ -119,7 +128,8 @@ func (handlers *ServerHandlers) CreateRecord(ctx context.Context, record entity.
 	return err
 }
 
-func (handlers *ServerHandlers) DeleteRecord(ctx context.Context, recordID string) error {
+// DeleteRecord deletes record from storage.
+func (handlers *Server) DeleteRecord(ctx context.Context, recordID string) error {
 	token, ok := ctx.Value("authToken").(entity.AuthToken)
 
 	if !ok {

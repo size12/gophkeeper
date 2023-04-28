@@ -2,6 +2,7 @@ package storage
 
 import "errors"
 
+// Errors for DB storage.
 var (
 	ErrUserUnauthorized = errors.New("user is unauthorized")
 	ErrWrongCredentials = errors.New("wrong login or password")

@@ -15,10 +15,12 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// ClientConn keeps connection with server. Uses gRPC.
 type ClientConn struct {
 	pb.GophkeeperClient
 }
 
+// NewClientConn connects to server and returning connection.
 func NewClientConn(serverAddress string) *ClientConn {
 	conn, err := grpc.Dial(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -29,6 +31,7 @@ func NewClientConn(serverAddress string) *ClientConn {
 	return &ClientConn{GophkeeperClient: c}
 }
 
+// Login logins user by login and password.
 func (conn *ClientConn) Login(credentials entity.UserCredentials) (string, error) {
 	session, err := conn.GophkeeperClient.Login(context.Background(), &pb.UserCredentials{
 		Login:    credentials.Login,
@@ -56,6 +59,7 @@ func (conn *ClientConn) Login(credentials entity.UserCredentials) (string, error
 	return session.SessionToken, nil
 }
 
+// Register creates new user by login and password.
 func (conn *ClientConn) Register(credentials entity.UserCredentials) (string, error) {
 	session, err := conn.GophkeeperClient.Register(context.Background(), &pb.UserCredentials{
 		Login:    credentials.Login,
@@ -76,6 +80,7 @@ func (conn *ClientConn) Register(credentials entity.UserCredentials) (string, er
 	return session.SessionToken, nil
 }
 
+// GetRecordsInfo gets all record.
 func (conn *ClientConn) GetRecordsInfo(token entity.AuthToken) ([]entity.Record, error) {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
@@ -103,6 +108,7 @@ func (conn *ClientConn) GetRecordsInfo(token entity.AuthToken) ([]entity.Record,
 	return records, nil
 }
 
+// GetRecord gets record from server by ID.
 func (conn *ClientConn) GetRecord(token entity.AuthToken, recordID string) (entity.Record, error) {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
@@ -130,6 +136,7 @@ func (conn *ClientConn) GetRecord(token entity.AuthToken, recordID string) (enti
 	return record, nil
 }
 
+// DeleteRecord deletes record from server by ID.
 func (conn *ClientConn) DeleteRecord(token entity.AuthToken, recordID string) error {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
@@ -149,6 +156,7 @@ func (conn *ClientConn) DeleteRecord(token entity.AuthToken, recordID string) er
 	return nil
 }
 
+// CreateRecord creates record and saves to server.
 func (conn *ClientConn) CreateRecord(token entity.AuthToken, record entity.Record) error {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 

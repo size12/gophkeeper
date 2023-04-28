@@ -17,18 +17,21 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type Server struct {
+// ServerConn keeps server endpoints alive.
+type ServerConn struct {
 	pb.UnimplementedGophkeeperServer
-	Handlers *ServerHandlers
+	Handlers *Server
 }
 
-func NewServer(h *ServerHandlers) *Server {
-	return &Server{
+// NewServerConn returns new server connection.
+func NewServerConn(h *Server) *ServerConn {
+	return &ServerConn{
 		Handlers: h,
 	}
 }
 
-func (server *Server) Run(ctx context.Context, runAddress string) {
+// Run runs server listener.
+func (server *ServerConn) Run(ctx context.Context, runAddress string) {
 	listen, err := net.Listen("tcp", runAddress)
 	if err != nil {
 		log.Fatal(err)
@@ -46,7 +49,8 @@ func (server *Server) Run(ctx context.Context, runAddress string) {
 	// TODO: gracefully shutdown.
 }
 
-func (server *Server) Register(_ context.Context, credentials *pb.UserCredentials) (*pb.Session, error) {
+// Register process register endpoint.
+func (server *ServerConn) Register(_ context.Context, credentials *pb.UserCredentials) (*pb.Session, error) {
 	token, err := server.Handlers.CreateUser(entity.UserCredentials{
 		Login:    credentials.Login,
 		Password: credentials.Password,
@@ -67,7 +71,8 @@ func (server *Server) Register(_ context.Context, credentials *pb.UserCredential
 	return &pb.Session{SessionToken: string(token)}, nil
 }
 
-func (server *Server) Login(_ context.Context, credentials *pb.UserCredentials) (*pb.Session, error) {
+// Login process login endpoint.
+func (server *ServerConn) Login(_ context.Context, credentials *pb.UserCredentials) (*pb.Session, error) {
 	token, err := server.Handlers.LoginUser(entity.UserCredentials{
 		Login:    credentials.Login,
 		Password: credentials.Password,
@@ -88,7 +93,8 @@ func (server *Server) Login(_ context.Context, credentials *pb.UserCredentials) 
 	return &pb.Session{SessionToken: string(token)}, nil
 }
 
-func (server *Server) GetRecordsInfo(ctx context.Context, _ *emptypb.Empty) (*pb.RecordsList, error) {
+// GetRecordsInfo process get all records endpoint.
+func (server *ServerConn) GetRecordsInfo(ctx context.Context, _ *emptypb.Empty) (*pb.RecordsList, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok || len(md.Get("authToken")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "Didn't send metadata for authentication.")
@@ -120,7 +126,8 @@ func (server *Server) GetRecordsInfo(ctx context.Context, _ *emptypb.Empty) (*pb
 	return &pb.RecordsList{Records: recordsList}, nil
 }
 
-func (server *Server) GetRecord(ctx context.Context, recordID *pb.RecordID) (*pb.Record, error) {
+// GetRecord process get record endpoint.
+func (server *ServerConn) GetRecord(ctx context.Context, recordID *pb.RecordID) (*pb.Record, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok || len(md.Get("authToken")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "Didn't send metadata for authentication.")
@@ -151,7 +158,8 @@ func (server *Server) GetRecord(ctx context.Context, recordID *pb.RecordID) (*pb
 	}, nil
 }
 
-func (server *Server) CreateRecord(ctx context.Context, record *pb.Record) (*emptypb.Empty, error) {
+// CreateRecord process create record endpoint.
+func (server *ServerConn) CreateRecord(ctx context.Context, record *pb.Record) (*emptypb.Empty, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok || len(md.Get("authToken")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "Didn't send metadata for authentication.")
@@ -177,7 +185,8 @@ func (server *Server) CreateRecord(ctx context.Context, record *pb.Record) (*emp
 	return &emptypb.Empty{}, nil
 }
 
-func (server *Server) DeleteRecord(ctx context.Context, recordID *pb.RecordID) (*emptypb.Empty, error) {
+// DeleteRecord process delete record endpoint.
+func (server *ServerConn) DeleteRecord(ctx context.Context, recordID *pb.RecordID) (*emptypb.Empty, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok || len(md.Get("authToken")) == 0 {
 		return nil, status.Errorf(codes.Unauthenticated, "Didn't send metadata for authentication.")
