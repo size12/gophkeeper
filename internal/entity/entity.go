@@ -22,17 +22,33 @@ type AuthToken string
 type Record struct {
 	ID       string
 	Metadata string
-	Type     string
+	Type     RecordType
 	Data     []byte
 }
 
-// Constants for encrypted information type.
+type RecordType int32
+
 const (
-	TypeLoginAndPassword = "LOGIN_AND_PASSWORD"
-	TypeFile             = "FILE"
-	TypeText             = "TEXT"
-	TypeCreditCard       = "CREDIT_CARD"
+	TypeLoginAndPassword RecordType = iota
+	TypeFile
+	TypeText
+	TypeCreditCard
 )
+
+func (r RecordType) String() string {
+	switch r {
+	case TypeLoginAndPassword:
+		return "Login + password"
+	case TypeFile:
+		return "Binary file"
+	case TypeText:
+		return "Text"
+	case TypeCreditCard:
+		return "Credit card"
+	default:
+		return "Unknown"
+	}
+}
 
 // LoginAndPassword for encrypted login and password.
 type LoginAndPassword struct {

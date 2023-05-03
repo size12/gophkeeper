@@ -109,7 +109,6 @@ func (storage *DBStorage) GetRecordsInfo(ctx context.Context) ([]entity.Record, 
 	userID, ok := ctx.Value("userID").(entity.UserID)
 	if !ok {
 		log.Println("Failed get userID from context in getting all records")
-		// TODO: add logs to file.
 		return nil, ErrUserUnauthorized
 	}
 

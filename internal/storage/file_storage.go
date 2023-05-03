@@ -52,7 +52,7 @@ func (storage *FileStorage) GetRecord(ctx context.Context, recordID string) (ent
 	record := entity.Record{
 		ID:       recordID,
 		Metadata: metadata,
-		Type:     "FILE",
+		Type:     entity.TypeFile,
 		Data:     data,
 	}
 

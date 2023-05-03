@@ -15,10 +15,17 @@ message RecordID {
   string id = 1;
 }
 
+enum MessageType {
+  TypeLoginAndPassword = 0;
+  TypeFile = 1;
+  TypeText = 2;
+  TypeCreditCard = 3;
+}
+
 message Record {
   string id = 1;
   string user_id = 2;
-  string type = 3;
+  MessageType type = 3;
   string metadata = 4;
   bytes stored_data = 5;
 }

@@ -1,4 +1,4 @@
-CREATE EXTENSION pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE users (
                         user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                         login VARCHAR(255),
@@ -8,7 +8,7 @@ CREATE TABLE users (
 CREATE TABLE users_data (
                        record_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                        user_id VARCHAR(255),
-                       record_type VARCHAR(255),
+                       record_type INT,
                        metadata VARCHAR(255),
                        encoded_data VARCHAR(255)
 );

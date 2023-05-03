@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/size12/gophkeeper/internal/client"
 	"github.com/size12/gophkeeper/internal/config"
@@ -16,5 +18,5 @@ func main() {
 
 	tui := client.NewTUI(h)
 
-	tui.Run()
+	log.Fatalln(tui.Run())
 }

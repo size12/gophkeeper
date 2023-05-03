@@ -101,7 +101,7 @@ func (conn *ClientConn) GetRecordsInfo(token entity.AuthToken) ([]entity.Record,
 		records = append(records, entity.Record{
 			ID:       record.Id,
 			Metadata: record.Metadata,
-			Type:     record.Type,
+			Type:     entity.RecordType(record.Type),
 		})
 	}
 
@@ -130,7 +130,7 @@ func (conn *ClientConn) GetRecord(token entity.AuthToken, recordID string) (enti
 	record = entity.Record{
 		ID:       gotRecord.Id,
 		Metadata: gotRecord.Metadata,
-		Type:     gotRecord.Type,
+		Type:     entity.RecordType(gotRecord.Type),
 		Data:     gotRecord.StoredData,
 	}
 	return record, nil
@@ -161,7 +161,7 @@ func (conn *ClientConn) CreateRecord(token entity.AuthToken, record entity.Recor
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
 	_, err := conn.GophkeeperClient.CreateRecord(ctx, &pb.Record{
-		Type:       record.Type,
+		Type:       pb.MessageType(record.Type),
 		Metadata:   record.Metadata,
 		StoredData: record.Data,
 	})

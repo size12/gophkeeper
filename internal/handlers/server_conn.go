@@ -21,6 +21,7 @@ import (
 type ServerConn struct {
 	pb.UnimplementedGophkeeperServer
 	Handlers *Server
+	server   *grpc.Server
 }
 
 // NewServerConn returns new server connection.
@@ -46,7 +47,13 @@ func (server *ServerConn) Run(ctx context.Context, runAddress string) {
 			log.Fatal(err)
 		}
 	}()
-	// TODO: gracefully shutdown.
+
+	server.server = sgrpc
+}
+
+func (server *ServerConn) Stop() {
+	server.server.GracefulStop()
+	fmt.Println("Shutdown server gracefully.")
 }
 
 // Register process register endpoint.
@@ -119,7 +126,7 @@ func (server *ServerConn) GetRecordsInfo(ctx context.Context, _ *emptypb.Empty) 
 		recordsList = append(recordsList, &pb.Record{
 			Id:       record.ID,
 			Metadata: record.Metadata,
-			Type:     record.Type,
+			Type:     pb.MessageType(record.Type),
 		})
 	}
 
@@ -152,7 +159,7 @@ func (server *ServerConn) GetRecord(ctx context.Context, recordID *pb.RecordID) 
 
 	return &pb.Record{
 		Id:         record.ID,
-		Type:       record.Type,
+		Type:       pb.MessageType(record.Type),
 		Metadata:   record.Metadata,
 		StoredData: record.Data,
 	}, nil
@@ -170,7 +177,7 @@ func (server *ServerConn) CreateRecord(ctx context.Context, record *pb.Record) (
 
 	err := server.Handlers.CreateRecord(ctx, entity.Record{
 		Metadata: record.Metadata,
-		Type:     record.Type,
+		Type:     entity.RecordType(record.Type),
 		Data:     record.StoredData,
 	})
 

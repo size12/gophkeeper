@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"path"
+	"regexp"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -139,7 +140,7 @@ func (app *TUI) recordsInfoPage(message string) {
 			record.Metadata = "no metadata"
 		}
 
-		list.AddItem(record.ID, record.Type+" | "+record.Metadata, '*', f)
+		list.AddItem(record.ID, record.Type.String()+" | "+record.Metadata, '*', f)
 	}
 
 	listFrame := tview.NewFrame(list).SetBorders(0, 0, 0, 1, 4, 4).
@@ -185,7 +186,7 @@ func (app *TUI) recordPage(recordID string, message string) {
 	}
 
 	frame := tview.NewFrame(tview.NewTextView().SetText(string(record.Data)).SetTextColor(tcell.ColorYellow).SetDisabled(true)).SetBorders(0, 0, 0, 1, 4, 4).
-		AddText(record.Metadata+" | "+record.Type, true, tview.AlignCenter, tcell.ColorGreen).
+		AddText(record.Metadata+" | "+record.Type.String(), true, tview.AlignCenter, tcell.ColorGreen).
 		AddText("Ctrl+K - copy | Ctrl+U - delete | ESC - return to the menu", false, tview.AlignLeft, tcell.ColorWhite).
 		AddText(message, false, tview.AlignRight, tcell.ColorWhite)
 
@@ -360,8 +361,39 @@ func (app *TUI) createCardRecord() {
 	})
 
 	form.AddButton("OK", func() {
+		result, err := regexp.Match(`^(0[1-9]|1[0-2])[|/]?([0-9]{4}|[0-9]{2})$`, []byte(creditCard.ExpirationDate))
+		if err != nil {
+			log.Fatalln("Failed parse regex for check card expiration date.")
+		}
+
+		if !result {
+			app.recordsInfoPage("Incorrect expiration date.")
+			return
+		}
+
+		result, err = regexp.Match(`^(?:4[0-9]{12}(?:[0-9]{3})?|[25][1-7][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$`, []byte(creditCard.CardNumber))
+		if err != nil {
+			log.Fatalln("Failed parse regex for check card expiration date.")
+			return
+		}
+
+		if !result {
+			app.recordsInfoPage("Incorrect card number.")
+			return
+		}
+
+		result, err = regexp.Match(`\d{3}`, []byte(creditCard.CVCCode))
+		if err != nil {
+			log.Fatalln("Failed parse regex for check card expiration date.")
+		}
+
+		if !result {
+			app.recordsInfoPage("Incorrect CVC code.")
+			return
+		}
+
 		record.Data, _ = creditCard.Bytes()
-		err := app.Client.CreateRecord(record)
+		err = app.Client.CreateRecord(record)
 
 		if errors.Is(err, storage.ErrUserUnauthorized) {
 			app.authPage("Session expired. Please login again.")

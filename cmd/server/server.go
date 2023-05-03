@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/size12/gophkeeper/internal/config"
@@ -22,6 +25,12 @@ func main() {
 	handlersAuth := handlers.NewAuthenticatorJWT([]byte("secret ewfwfw key"))
 	serverHandlers := handlers.NewServerHandlers(serverStorage, handlersAuth)
 
-	handlers.NewServerConn(serverHandlers).Run(context.Background(), cfg.RunAddress)
-	select {}
+	server := handlers.NewServerConn(serverHandlers)
+	go server.Run(context.Background(), cfg.RunAddress)
+
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	<-sigint
+
+	server.Stop()
 }
