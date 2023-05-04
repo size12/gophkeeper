@@ -9,8 +9,8 @@ import (
 
 // Storage struct which saves to DB and file storage.
 type Storage struct {
-	DBStorage   *DBStorage
-	FileStorage *FileStorage
+	DBStorage   Storager
+	FileStorage FileStorager
 }
 
 // NewStorage returns new storage.

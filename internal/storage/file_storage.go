@@ -29,8 +29,8 @@ func NewFileStorage(directory string) *FileStorage {
 func (storage *FileStorage) GetRecord(ctx context.Context, recordID string) (entity.Record, error) {
 	metadata, ok := ctx.Value("recordMetadata").(string)
 	if !ok {
-		log.Println("Failed get userID from context in getting all records")
-		return entity.Record{}, ErrUserUnauthorized
+		log.Println("Failed get record metadata from context in getting file record")
+		return entity.Record{}, ErrUnknown
 	}
 
 	file, err := os.Open(storage.directory + "/" + recordID)
@@ -61,10 +61,13 @@ func (storage *FileStorage) GetRecord(ctx context.Context, recordID string) (ent
 
 // DeleteRecord deletes file with record data.
 func (storage *FileStorage) DeleteRecord(_ context.Context, recordID string) error {
-	err := os.RemoveAll(storage.directory + "/" + recordID)
-	if errors.Is(err, os.ErrNotExist) {
+	filename := storage.directory + "/" + recordID
+	if _, err := os.Stat(filename); errors.Is(err, os.ErrNotExist) {
 		return ErrNotFound
 	}
+
+	err := os.RemoveAll(filename)
+
 	if err != nil {
 		return ErrUnknown
 	}
