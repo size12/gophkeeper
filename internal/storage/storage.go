@@ -14,7 +14,7 @@ type Storage struct {
 }
 
 // NewStorage returns new storage.
-func NewStorage(DBStorage *DBStorage, fileStorage *FileStorage) *Storage {
+func NewStorage(DBStorage Storager, fileStorage FileStorager) *Storage {
 	return &Storage{
 		DBStorage:   DBStorage,
 		FileStorage: fileStorage,

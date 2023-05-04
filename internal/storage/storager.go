@@ -7,6 +7,8 @@ import (
 )
 
 // FileStorager interface for storage, which can storage files.
+//
+//go:generate mockery --name FileStorager
 type FileStorager interface {
 	GetRecord(ctx context.Context, recordID string) (entity.Record, error)
 	CreateRecord(ctx context.Context, record entity.Record) (string, error)
@@ -14,6 +16,8 @@ type FileStorager interface {
 }
 
 // Storager interface for storage, which can storage only text data.
+//
+//go:generate mockery --name Storager
 type Storager interface {
 	CreateUser(credentials entity.UserCredentials) error
 	LoginUser(credentials entity.UserCredentials) (entity.UserID, error)
