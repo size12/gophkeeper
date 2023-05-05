@@ -20,12 +20,12 @@ import (
 // ServerConn keeps server endpoints alive.
 type ServerConn struct {
 	pb.UnimplementedGophkeeperServer
-	Handlers *Server
+	Handlers ServerHandlers
 	server   *grpc.Server
 }
 
 // NewServerConn returns new server connection.
-func NewServerConn(h *Server) *ServerConn {
+func NewServerConn(h ServerHandlers) *ServerConn {
 	return &ServerConn{
 		Handlers: h,
 	}

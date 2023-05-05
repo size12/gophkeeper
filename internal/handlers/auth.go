@@ -10,6 +10,8 @@ import (
 )
 
 // Authenticator is interface for user authenticating. Should can creates tokens, and gets userIDs from them.
+//
+//go:generate mockery --name Authenticator
 type Authenticator interface {
 	CreateToken(userID entity.UserID) (entity.AuthToken, error)
 	ValidateToken(token entity.AuthToken) (entity.UserID, error)

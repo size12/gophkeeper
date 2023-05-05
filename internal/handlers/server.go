@@ -10,6 +10,18 @@ import (
 	"github.com/size12/gophkeeper/internal/storage"
 )
 
+// ServerHandlers interface for server handlers
+//
+//go:generate mockery --name ServerHandlers
+type ServerHandlers interface {
+	LoginUser(credentials entity.UserCredentials) (entity.AuthToken, error)
+	CreateUser(credentials entity.UserCredentials) (entity.AuthToken, error)
+	GetRecordsInfo(ctx context.Context) ([]entity.Record, error)
+	GetRecord(ctx context.Context, recordID string) (entity.Record, error)
+	CreateRecord(ctx context.Context, record entity.Record) error
+	DeleteRecord(ctx context.Context, recordID string) error
+}
+
 // Server struct for server handlers.
 type Server struct {
 	Storage       storage.Storager
