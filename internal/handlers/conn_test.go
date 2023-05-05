@@ -14,13 +14,12 @@ import (
 
 func TestCreateUser(t *testing.T) {
 	serverCfg := config.GetServerConfig()
-	client := NewClientConn(serverCfg.RunAddress)
-
 	handlers := mocks.NewServerHandlers(t)
-
 	server := NewServerConn(handlers)
 	server.Run(context.Background(), serverCfg.RunAddress)
 	defer server.Stop()
+
+	client := NewClientConn(serverCfg.RunAddress)
 
 	tc := []struct {
 		name  string
