@@ -13,13 +13,13 @@ import (
 
 // Client struct for client handlers.
 type Client struct {
-	Conn      *ClientConn
+	Conn      ClientConn
 	authToken entity.AuthToken
 	masterKey []byte
 }
 
 // NewClientHandlers returns new client handlers.
-func NewClientHandlers(conn *ClientConn) *Client {
+func NewClientHandlers(conn ClientConn) *Client {
 	return &Client{
 		Conn: conn,
 	}

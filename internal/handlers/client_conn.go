@@ -15,24 +15,36 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// ClientConn keeps connection with server. Uses gRPC.
-type ClientConn struct {
+// ClientConn describes client connection.
+//
+//go:generate mockery --name ClientConn
+type ClientConn interface {
+	Login(credentials entity.UserCredentials) (string, error)
+	Register(credentials entity.UserCredentials) (string, error)
+	GetRecordsInfo(token entity.AuthToken) ([]entity.Record, error)
+	GetRecord(token entity.AuthToken, recordID string) (entity.Record, error)
+	DeleteRecord(token entity.AuthToken, recordID string) error
+	CreateRecord(token entity.AuthToken, record entity.Record) error
+}
+
+// ClientConnGPRC keeps connection with server. Uses gRPC.
+type ClientConnGPRC struct {
 	pb.GophkeeperClient
 }
 
 // NewClientConn connects to server and returning connection.
-func NewClientConn(serverAddress string) *ClientConn {
+func NewClientConn(serverAddress string) *ClientConnGPRC {
 	conn, err := grpc.Dial(serverAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	c := pb.NewGophkeeperClient(conn)
-	return &ClientConn{GophkeeperClient: c}
+	return &ClientConnGPRC{GophkeeperClient: c}
 }
 
 // Login logins user by login and password.
-func (conn *ClientConn) Login(credentials entity.UserCredentials) (string, error) {
+func (conn *ClientConnGPRC) Login(credentials entity.UserCredentials) (string, error) {
 	session, err := conn.GophkeeperClient.Login(context.Background(), &pb.UserCredentials{
 		Login:    credentials.Login,
 		Password: credentials.Password,
@@ -60,7 +72,7 @@ func (conn *ClientConn) Login(credentials entity.UserCredentials) (string, error
 }
 
 // Register creates new user by login and password.
-func (conn *ClientConn) Register(credentials entity.UserCredentials) (string, error) {
+func (conn *ClientConnGPRC) Register(credentials entity.UserCredentials) (string, error) {
 	session, err := conn.GophkeeperClient.Register(context.Background(), &pb.UserCredentials{
 		Login:    credentials.Login,
 		Password: credentials.Password,
@@ -81,7 +93,7 @@ func (conn *ClientConn) Register(credentials entity.UserCredentials) (string, er
 }
 
 // GetRecordsInfo gets all record.
-func (conn *ClientConn) GetRecordsInfo(token entity.AuthToken) ([]entity.Record, error) {
+func (conn *ClientConnGPRC) GetRecordsInfo(token entity.AuthToken) ([]entity.Record, error) {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
 	gotRecords, err := conn.GophkeeperClient.GetRecordsInfo(ctx, &emptypb.Empty{})
@@ -109,7 +121,7 @@ func (conn *ClientConn) GetRecordsInfo(token entity.AuthToken) ([]entity.Record,
 }
 
 // GetRecord gets record from server by ID.
-func (conn *ClientConn) GetRecord(token entity.AuthToken, recordID string) (entity.Record, error) {
+func (conn *ClientConnGPRC) GetRecord(token entity.AuthToken, recordID string) (entity.Record, error) {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
 	gotRecord, err := conn.GophkeeperClient.GetRecord(ctx, &pb.RecordID{Id: recordID})
@@ -137,7 +149,7 @@ func (conn *ClientConn) GetRecord(token entity.AuthToken, recordID string) (enti
 }
 
 // DeleteRecord deletes record from server by ID.
-func (conn *ClientConn) DeleteRecord(token entity.AuthToken, recordID string) error {
+func (conn *ClientConnGPRC) DeleteRecord(token entity.AuthToken, recordID string) error {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
 	_, err := conn.GophkeeperClient.DeleteRecord(ctx, &pb.RecordID{Id: recordID})
@@ -157,7 +169,7 @@ func (conn *ClientConn) DeleteRecord(token entity.AuthToken, recordID string) er
 }
 
 // CreateRecord creates record and saves to server.
-func (conn *ClientConn) CreateRecord(token entity.AuthToken, record entity.Record) error {
+func (conn *ClientConnGPRC) CreateRecord(token entity.AuthToken, record entity.Record) error {
 	ctx := metadata.AppendToOutgoingContext(context.Background(), "authToken", string(token))
 
 	_, err := conn.GophkeeperClient.CreateRecord(ctx, &pb.Record{
