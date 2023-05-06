@@ -6,6 +6,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"os"
+	"sync"
 
 	"github.com/size12/gophkeeper/internal/entity"
 	"github.com/size12/gophkeeper/internal/storage"
@@ -16,12 +17,14 @@ type Client struct {
 	Conn      ClientConn
 	authToken entity.AuthToken
 	masterKey []byte
+	*sync.Mutex
 }
 
 // NewClientHandlers returns new client handlers.
 func NewClientHandlers(conn ClientConn) *Client {
 	return &Client{
-		Conn: conn,
+		Conn:  conn,
+		Mutex: &sync.Mutex{},
 	}
 }
 
@@ -34,6 +37,10 @@ func (client *Client) Login(credentials entity.UserCredentials) error {
 	if err != nil {
 		return err
 	}
+
+	client.Lock()
+	defer client.Unlock()
+
 	client.authToken = entity.AuthToken(authToken)
 	sha := sha256.New()
 
@@ -58,6 +65,10 @@ func (client *Client) Register(credentials entity.UserCredentials) error {
 	if err != nil {
 		return err
 	}
+
+	client.Lock()
+	defer client.Unlock()
+
 	client.authToken = entity.AuthToken(authToken)
 
 	sha := sha256.New()
@@ -76,12 +87,15 @@ func (client *Client) Register(credentials entity.UserCredentials) error {
 
 // GetRecordsInfo gets all records.
 func (client *Client) GetRecordsInfo() ([]entity.Record, error) {
+	client.Lock()
+	defer client.Unlock()
 	return client.Conn.GetRecordsInfo(client.authToken)
 }
 
 // GetRecord gets record by recordID and decodes it.
 func (client *Client) GetRecord(recordID string) (entity.Record, error) {
-
+	client.Lock()
+	defer client.Unlock()
 	record, err := client.Conn.GetRecord(client.authToken, recordID)
 
 	if err != nil {
@@ -127,11 +141,15 @@ func (client *Client) GetRecord(recordID string) (entity.Record, error) {
 
 // DeleteRecord deletes record by his ID.
 func (client *Client) DeleteRecord(recordID string) error {
+	client.Lock()
+	defer client.Unlock()
 	return client.Conn.DeleteRecord(client.authToken, recordID)
 }
 
 // CreateRecord creates new record.
 func (client *Client) CreateRecord(record entity.Record) error {
+	client.Lock()
+	defer client.Unlock()
 	aesblock, err := aes.NewCipher(client.masterKey)
 
 	if err != nil {
