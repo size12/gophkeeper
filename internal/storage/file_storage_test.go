@@ -84,7 +84,6 @@ func TestFileStorage_GetRecord(t *testing.T) {
 					Type:     entity.TypeFile,
 					Data:     []byte("text"),
 				}, record)
-
 			},
 		},
 		{

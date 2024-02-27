@@ -22,7 +22,6 @@ type DBStorage struct {
 // NewDBStorage connects to DB.
 func NewDBStorage(connectionURL string) *DBStorage {
 	db, err := sql.Open("pgx", connectionURL)
-
 	if err != nil {
 		log.Fatalln("Failed open DB storage:", err)
 		return nil
@@ -41,7 +40,6 @@ func (storage *DBStorage) MigrateUP() {
 	m, err := migrate.NewWithDatabaseInstance(
 		"file://migrations",
 		"pgx", driver)
-
 	if err != nil {
 		log.Fatalf("Failed create migration instance: %v\n", err)
 		return
@@ -124,7 +122,6 @@ func (storage *DBStorage) GetRecordsInfo(ctx context.Context) ([]entity.Record, 
 	var row entity.Record
 	for rows.Next() {
 		err := rows.Scan(&row.ID, &row.Type, &row.Metadata)
-
 		if err != nil {
 			log.Println("Failed get next row in getting all records:", err)
 			return nil, ErrUnknown
@@ -207,7 +204,6 @@ func (storage *DBStorage) DeleteRecord(ctx context.Context, recordID string) err
 	}
 
 	result, err := storage.DB.ExecContext(ctx, `DELETE FROM users_data WHERE record_id = $1 AND user_id = $2`, recordID, userID)
-
 	if err != nil {
 		log.Println("Failed delete record:", err)
 		return ErrUnknown

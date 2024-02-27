@@ -36,7 +36,6 @@ func (auth *AuthenticatorJWT) CreateToken(userID entity.UserID) (entity.AuthToke
 	claims["userID"] = userID
 
 	tokenString, err := token.SignedString(auth.secretKey)
-
 	if err != nil {
 		log.Println("Failed generate token for authentication:", err)
 		return "", storage.ErrUnknown
@@ -55,7 +54,6 @@ func (auth *AuthenticatorJWT) ValidateToken(token entity.AuthToken) (entity.User
 		}
 		return auth.secretKey, nil
 	})
-
 	if err != nil {
 		return "", storage.ErrUserUnauthorized
 	}

@@ -23,7 +23,6 @@ type TUI struct {
 
 // NewTUI gets new terminal user interface for client.
 func NewTUI(client *handlers.Client) *TUI {
-
 	app := tview.NewApplication()
 	pages := tview.NewPages()
 
@@ -444,7 +443,6 @@ func (app *TUI) createFileRecord() {
 		record.Metadata = filename
 
 		data, err := file.Bytes()
-
 		if err != nil {
 			app.recordsInfoPage("Failed opened file.")
 			return
