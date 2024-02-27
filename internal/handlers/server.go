@@ -46,13 +46,11 @@ func (handlers *Server) LoginUser(credentials entity.UserCredentials) (entity.Au
 	credentials.Password = hex.EncodeToString(sha.Sum(nil))
 
 	userID, err := handlers.Storage.LoginUser(credentials)
-
 	if err != nil {
 		return "", err
 	}
 
 	authToken, err := handlers.Authenticator.CreateToken(userID)
-
 	if err != nil {
 		log.Println("Failed create authToken:", err)
 		return "", storage.ErrUnknown
@@ -77,7 +75,6 @@ func (handlers *Server) CreateUser(credentials entity.UserCredentials) (entity.A
 		Login:    credentials.Login,
 		Password: passwordHash,
 	})
-
 	if err != nil {
 		return "", err
 	}
@@ -94,7 +91,6 @@ func (handlers *Server) GetRecordsInfo(ctx context.Context) ([]entity.Record, er
 	}
 
 	userID, err := handlers.Authenticator.ValidateToken(token)
-
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +108,6 @@ func (handlers *Server) GetRecord(ctx context.Context, recordID string) (entity.
 	}
 
 	userID, err := handlers.Authenticator.ValidateToken(token)
-
 	if err != nil {
 		return entity.Record{}, err
 	}
@@ -130,7 +125,6 @@ func (handlers *Server) CreateRecord(ctx context.Context, record entity.Record) 
 	}
 
 	userID, err := handlers.Authenticator.ValidateToken(token)
-
 	if err != nil {
 		return err
 	}
@@ -149,7 +143,6 @@ func (handlers *Server) DeleteRecord(ctx context.Context, recordID string) error
 	}
 
 	userID, err := handlers.Authenticator.ValidateToken(token)
-
 	if err != nil {
 		return err
 	}

@@ -45,7 +45,6 @@ func TestRecordType_String(t *testing.T) {
 		result := test.arg.String()
 		assert.Equal(t, test.want, result)
 	}
-
 }
 
 func TestMessage_Bytes(t *testing.T) {

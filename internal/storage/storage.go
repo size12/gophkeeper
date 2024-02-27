@@ -45,7 +45,6 @@ func (storage *Storage) CreateRecord(ctx context.Context, record entity.Record) 
 	}
 
 	id, err := storage.DBStorage.CreateRecord(ctx, record)
-
 	if err != nil {
 		return "", err
 	}

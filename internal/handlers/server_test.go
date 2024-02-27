@@ -69,7 +69,6 @@ func TestServer_CreateUser(t *testing.T) {
 		store.AssertExpectations(t)
 		auth.AssertExpectations(t)
 	}
-
 }
 
 func TestServer_LoginUser(t *testing.T) {
@@ -118,7 +117,6 @@ func TestServer_LoginUser(t *testing.T) {
 		store.AssertExpectations(t)
 		auth.AssertExpectations(t)
 	}
-
 }
 
 func TestServer_GetRecordsInfo(t *testing.T) {
@@ -162,7 +160,6 @@ func TestServer_GetRecordsInfo(t *testing.T) {
 		store.AssertExpectations(t)
 		auth.AssertExpectations(t)
 	}
-
 }
 
 func TestServer_GetRecord(t *testing.T) {
@@ -206,7 +203,6 @@ func TestServer_GetRecord(t *testing.T) {
 		store.AssertExpectations(t)
 		auth.AssertExpectations(t)
 	}
-
 }
 
 func TestServer_CreateRecord(t *testing.T) {
@@ -250,7 +246,6 @@ func TestServer_CreateRecord(t *testing.T) {
 		store.AssertExpectations(t)
 		auth.AssertExpectations(t)
 	}
-
 }
 
 func TestServer_DeleteRecord(t *testing.T) {
@@ -294,5 +289,4 @@ func TestServer_DeleteRecord(t *testing.T) {
 		store.AssertExpectations(t)
 		auth.AssertExpectations(t)
 	}
-
 }

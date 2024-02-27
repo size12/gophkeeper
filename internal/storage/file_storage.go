@@ -44,7 +44,6 @@ func (storage *FileStorage) GetRecord(ctx context.Context, recordID string) (ent
 	}
 
 	data, err := io.ReadAll(file)
-
 	if err != nil {
 		return entity.Record{}, ErrUnknown
 	}
@@ -67,7 +66,6 @@ func (storage *FileStorage) DeleteRecord(_ context.Context, recordID string) err
 	}
 
 	err := os.RemoveAll(filename)
-
 	if err != nil {
 		return ErrUnknown
 	}

@@ -97,13 +97,11 @@ func (client *Client) GetRecord(recordID string) (entity.Record, error) {
 	client.Lock()
 	defer client.Unlock()
 	record, err := client.Conn.GetRecord(client.authToken, recordID)
-
 	if err != nil {
 		return record, err
 	}
 
 	aesblock, err := aes.NewCipher(client.masterKey)
-
 	if err != nil {
 		return record, ErrWrongMasterKey
 	}
@@ -116,7 +114,6 @@ func (client *Client) GetRecord(recordID string) (entity.Record, error) {
 	nonce := record.Data[:aesgcm.NonceSize()]
 
 	decoded, err := aesgcm.Open(nil, nonce, record.Data[aesgcm.NonceSize():], nil)
-
 	if err != nil {
 		return record, storage.ErrUnknown
 	}
@@ -151,7 +148,6 @@ func (client *Client) CreateRecord(record entity.Record) error {
 	client.Lock()
 	defer client.Unlock()
 	aesblock, err := aes.NewCipher(client.masterKey)
-
 	if err != nil {
 		return ErrWrongMasterKey
 	}
